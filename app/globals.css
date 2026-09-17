@@ -1,26 +1,96 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: `.dark` is toggled on <html> by the theme script /
+   ThemeToggle component (system mode follows prefers-color-scheme). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Custom breakpoints: small < 800px, medium 800–1024px, large > 1024px. */
+@theme {
+  --breakpoint-md: 800px;
+  --breakpoint-lg: 1024px;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Dark-mode basemap: invert the light OSM tiles so they don't glare. */
+.dark .leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
+/* Leaflet popup styling, incl. dark mode. */
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+}
+
+/* Make the popup box hug its content. Leaflet otherwise hardcodes a one-time
+   pixel width when the popup opens and never updates it, which is why the box
+   was stuck at one size across breakpoints. */
+.leaflet-popup-content {
+  width: max-content !important;
+  max-width: min(92vw, 860px);
+}
+
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background: #18181b;
+  color: #e4e4e7;
+}
+
+.dark .leaflet-popup-content-wrapper {
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.6);
+}
+
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Thin scrollbars for the popup details list. */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(127, 127, 127, 0.5) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(127, 127, 127, 0.5);
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(127, 127, 127, 0.75);
 }
