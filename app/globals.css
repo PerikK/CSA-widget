@@ -55,6 +55,8 @@ body {
 .leaflet-popup-content {
   width: max-content !important;
   max-width: min(92vw, 860px);
+  margin: 10px 14px;
+  /* tighter inner padding than Leaflet's default */
 }
 
 .dark .leaflet-popup-content-wrapper,

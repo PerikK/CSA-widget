@@ -126,7 +126,7 @@ function popupHtml(submission: CitizenSubmission): string {
     <div class="text-sm font-sans">
       <div class="text-base font-semibold text-zinc-900 dark:text-zinc-100">${escapeHtml(site)}</div>
       <div class="mt-1 flex items-center gap-2">
-        <span class="rounded-full px-2 py-0.5 text-xs font-semibold text-white" style="background-color:${meta.color}">
+        <span class="inline-flex items-center justify-center rounded-full pr-2 py-0.5 text-xs font-semibold leading-none text-white" style="background-color:${meta.color}">
           ${escapeHtml(meta.label)}
         </span>
         <span class="text-xs text-zinc-500 dark:text-zinc-400">${escapeHtml(formatDate(submission.createdAt))}</span>
@@ -135,7 +135,7 @@ function popupHtml(submission: CitizenSubmission): string {
         <summary class="cursor-pointer select-none rounded-md px-1 py-0.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800">
           Details
         </summary>
-        <dl class="mt-2 grid max-h-72 grid-cols-1 gap-x-6 overflow-y-auto pr-1 scrollbar-thin md:grid-cols-2 lg:grid-cols-3">${rows}</dl>
+        <dl class="mt-2 grid max-h-40 grid-cols-1 gap-x-6 overflow-y-auto pr-1 scrollbar-thin md:grid-cols-2 lg:grid-cols-3">${rows}</dl>
       </details>
     </div>`;
 }
