@@ -44,3 +44,10 @@ export interface CitizenSubmission {
 	anger?: number;
 	fear?: number;
 }
+
+// Shape returned by `GET /api/submissions` (our own route): the submissions
+// plus the timestamp of when they were last fetched from the upstream API.
+export interface SubmissionsResponse {
+	submissions: CitizenSubmission[];
+	updatedAt: string;
+}

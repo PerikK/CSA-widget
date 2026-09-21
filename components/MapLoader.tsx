@@ -12,6 +12,12 @@ const Map = dynamic(() => import('./Map'), {
 	),
 });
 
-export default function MapLoader() {
-	return <Map />;
+export default function MapLoader({
+	refreshKey,
+	onUpdatedAt,
+}: {
+	refreshKey: number;
+	onUpdatedAt: (updatedAt: string) => void;
+}) {
+	return <Map refreshKey={refreshKey} onUpdatedAt={onUpdatedAt} />;
 }

@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { assessmentMeta } from '@/lib/assessment';
-import type { CitizenSubmission } from '@/lib/types';
+import type {
+	CitizenSubmission,
+	SubmissionsResponse,
+} from '@/lib/types';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -142,12 +145,19 @@ function popupHtml(submission: CitizenSubmission): string {
     </div>`;
 }
 
-export default function Map() {
+interface MapProps {
+	refreshKey: number;
+	onUpdatedAt: (updatedAt: string) => void;
+}
+
+export default function Map({ refreshKey, onUpdatedAt }: MapProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
+	const markersRef = useRef<L.LayerGroup | null>(null);
 	const [status, setStatus] = useState<Status>('loading');
 	const [error, setError] = useState<string | null>(null);
 
+	// Create the Leaflet map once (independent of data fetching/refresh).
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;
@@ -170,51 +180,77 @@ export default function Map() {
 
 		map.setView([0, 0], 2);
 		mapRef.current = map;
+		markersRef.current = L.layerGroup().addTo(map);
 
+		return () => {
+			map.remove();
+			mapRef.current = null;
+			markersRef.current = null;
+		};
+	}, []);
+
+	// Fetch + render markers whenever refreshKey changes (including initial mount).
+	useEffect(() => {
 		let cancelled = false;
 
 		(async () => {
+			setStatus('loading');
+			setError(null);
+
 			try {
-				const res = await fetch('/api/submissions', {
-					cache: 'no-store',
-				});
+				const url =
+					refreshKey > 0
+						? '/api/submissions?refresh=1'
+						: '/api/submissions';
+				const res = await fetch(url, { cache: 'no-store' });
 				if (!res.ok)
 					throw new Error(`Request failed with status ${res.status}`);
 
-				const data: CitizenSubmission[] = await res.json();
-				const points = data.filter(
+				const payload: SubmissionsResponse = await res.json();
+
+				if (cancelled) return;
+
+				const points = payload.submissions.filter(
 					s =>
 						Number.isFinite(s.latitude) &&
 						Number.isFinite(s.longitude),
 				);
 
-				if (cancelled) return;
+				const map = mapRef.current;
+				const markers = markersRef.current;
 
-				if (points.length > 0) {
-					const bounds = L.latLngBounds(
-						points.map(
-							s => [s.latitude, s.longitude] as [number, number],
-						),
-					);
-					map.fitBounds(bounds, { padding: [32, 32], maxZoom: 16 });
+				if (map && markers) {
+					markers.clearLayers();
+
+					for (const submission of points) {
+						const meta = assessmentMeta(submission.overallAssessment);
+						const marker = L.circleMarker(
+							[submission.latitude, submission.longitude],
+							{
+								radius: 8,
+								color: '#ffffff',
+								weight: 2,
+								fillColor: meta.color,
+								fillOpacity: 0.95,
+							},
+						);
+						marker.bindPopup(popupHtml(submission), {
+							maxWidth: 860,
+						});
+						marker.addTo(markers);
+					}
+
+					if (points.length > 0) {
+						const bounds = L.latLngBounds(
+							points.map(
+								s => [s.latitude, s.longitude] as [number, number],
+							),
+						);
+						map.fitBounds(bounds, { padding: [32, 32], maxZoom: 16 });
+					}
 				}
 
-				for (const submission of points) {
-					const meta = assessmentMeta(submission.overallAssessment);
-					const marker = L.circleMarker(
-						[submission.latitude, submission.longitude],
-						{
-							radius: 8,
-							color: '#ffffff',
-							weight: 2,
-							fillColor: meta.color,
-							fillOpacity: 0.95,
-						},
-					);
-					marker.bindPopup(popupHtml(submission), { maxWidth: 860 });
-					marker.addTo(map);
-				}
-
+				onUpdatedAt(payload.updatedAt);
 				setStatus('ready');
 			} catch (err) {
 				if (cancelled) return;
@@ -226,10 +262,8 @@ export default function Map() {
 
 		return () => {
 			cancelled = true;
-			map.remove();
-			mapRef.current = null;
 		};
-	}, []);
+	}, [refreshKey, onUpdatedAt]);
 
 	return (
 		<div className='relative h-full w-full'>
