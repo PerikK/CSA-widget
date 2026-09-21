@@ -1,0 +1,25 @@
+services:
+  widget:
+    build: .
+    restart: unless-stopped
+    environment:
+      UPSTREAM_URL: ${UPSTREAM_URL}
+      UPSTREAM_USERNAME: ${UPSTREAM_USERNAME}
+      UPSTREAM_PASSWORD: ${UPSTREAM_PASSWORD}
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - widget
+
+volumes:
+  caddy_data:
+  caddy_config:

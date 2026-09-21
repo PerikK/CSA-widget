@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# standalone deploy artifact (build output)
+/deploy/
+
 # production
 /build
 

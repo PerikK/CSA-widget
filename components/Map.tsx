@@ -52,7 +52,9 @@ function detailRow(label: string, value: string): string {
 
 function popupHtml(submission: CitizenSubmission): string {
 	const meta = assessmentMeta(submission.overallAssessment);
-	const site = text(submission.researchSite);
+	// `userGeneratedSite` is the field used by `/api/citizens/user-generated-sites/all-submissions`;
+	// the `/api/citizens/submissions` endpoint uses `researchSite` instead.
+	const site = text(submission.userGeneratedSite);
 
 	const rows = [
 		['Recorded by', text(submission.user)],

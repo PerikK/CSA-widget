@@ -2,6 +2,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
 	reactCompiler: true,
+	// Produce a self-contained `.next/standalone` bundle (server.js + minimal
+	// node_modules) so the app can be deployed without a full `node_modules`.
+	output: 'standalone',
 	async headers() {
 		return [
 			// Allow the /embed page to be framed by any site.
