@@ -131,7 +131,7 @@ function popupHtml(submission: CitizenSubmission): string {
     <div class="text-sm font-sans">
       <div class="text-base font-semibold text-zinc-900 dark:text-zinc-100">${escapeHtml(site)}</div>
       <div class="mt-1 flex items-center gap-2">
-        <span class="inline-flex items-center justify-center rounded-full pr-2 py-0.5 text-xs font-semibold leading-none text-white" style="background-color:${meta.color}">
+        <span class="inline-flex items-center justify-center rounded-full py-2 px-2 text-xs font-semibold leading-none text-white" style="background-color:${meta.color}">
           ${escapeHtml(meta.label)}
         </span>
         <span class="text-xs text-zinc-500 dark:text-zinc-400">${escapeHtml(formatDate(submission.createdAt))}</span>
