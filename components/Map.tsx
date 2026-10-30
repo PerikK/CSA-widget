@@ -60,7 +60,7 @@ function popupHtml(submission: CitizenSubmission): string {
 	const site = text(submission.userGeneratedSite);
 
 	const rows = [
-		['Recorded by', text(submission.user)],
+		// ['Recorded by', text(submission.user)],
 		['Date', formatDate(submission.createdAt)],
 		['Channel form', text(submission.channelForm)],
 		['Bottom channel type', text(submission.bottomChannelType)],
