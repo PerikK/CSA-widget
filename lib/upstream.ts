@@ -18,11 +18,11 @@ const BASE_URL = (
 ).replace(/\/+$/, '');
 
 const LOGIN_PATH = '/api/auth/login';
-// const SUBMISSIONS_PATH = "/api/citizens/submissions";
+const SUBMISSIONS_PATH = "/api/citizens/submissions";
 // const SUBMISSIONS_PATH = '/api/sites/user-generated';
 // const SUBMISSIONS_PATH = '/api/citizens/user-generated-sites/my-sites';
-const SUBMISSIONS_PATH =
-	'/api/citizens/user-generated-sites/all-submissions';
+// const SUBMISSIONS_PATH =
+// 	'/api/citizens/user-generated-sites/all-submissions';
 
 // Safety margin: consider a token expired this long before its `exp` claim.
 const EXPIRY_SKEW_MS = 30_000;
