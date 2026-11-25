@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-	title: 'CSA Widget',
+	title: 'World Map CSA',
 	description: 'Embeddable map of citizen science submissions',
 };
 
