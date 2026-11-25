@@ -6,6 +6,8 @@
 // came from (used for filtering and marker shape).
 export type SubmissionSource = 'research' | 'user-generated';
 
+export type SourceVisibility = Record<SubmissionSource, boolean>;
+
 export interface CitizenSubmission {
 	source: SubmissionSource;
 	longitude: number;

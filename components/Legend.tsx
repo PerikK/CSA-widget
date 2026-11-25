@@ -1,6 +1,10 @@
 import { ASSESSMENT_META } from '@/lib/assessment';
 import { PIN_PATH, PIN_VIEWBOX } from '@/lib/markers';
-import type { SourceStatus, SubmissionSource } from '@/lib/types';
+import type {
+	SourceStatus,
+	SourceVisibility,
+	SubmissionSource,
+} from '@/lib/types';
 
 const SOURCE_ORDER: SubmissionSource[] = ['research', 'user-generated'];
 
@@ -12,6 +16,11 @@ const SOURCE_LABELS: Record<SubmissionSource, string> = {
 const SOURCE_SHORT_LABELS: Record<SubmissionSource, string> = {
 	research: 'Research',
 	'user-generated': 'User-generated',
+};
+
+const SOURCE_DISPLAY_LABELS: Record<SubmissionSource, string> = {
+	research: 'Research Site',
+	'user-generated': 'User Generated',
 };
 
 const MONTHS = [
@@ -66,11 +75,52 @@ function sourceWarnings(
 	);
 }
 
+function EyeIcon() {
+	return (
+		<svg
+			viewBox='0 0 24 24'
+			className='h-3.5 w-3.5 shrink-0'
+			fill='none'
+			stroke='currentColor'
+			strokeWidth='2'
+			strokeLinecap='round'
+			strokeLinejoin='round'
+			aria-hidden='true'
+		>
+			<path d='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z' />
+			<circle cx='12' cy='12' r='3' />
+		</svg>
+	);
+}
+
+function EyeOffIcon() {
+	return (
+		<svg
+			viewBox='0 0 24 24'
+			className='h-3.5 w-3.5 shrink-0'
+			fill='none'
+			stroke='currentColor'
+			strokeWidth='2'
+			strokeLinecap='round'
+			strokeLinejoin='round'
+			aria-hidden='true'
+		>
+			<path d='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z' />
+			<circle cx='12' cy='12' r='3' />
+			<path d='M3 3l18 18' />
+		</svg>
+	);
+}
+
 export default function Legend({
 	sources,
+	visibleSources,
+	onToggleSource,
 	onRefresh,
 }: {
 	sources: Record<SubmissionSource, SourceStatus> | null;
+	visibleSources: SourceVisibility;
+	onToggleSource: (source: SubmissionSource) => void;
 	onRefresh: () => void;
 }) {
 	const warnings = sourceWarnings(sources);
@@ -92,25 +142,46 @@ export default function Legend({
 				))}
 			</div>
 			<div className='mt-1.5 border-t border-zinc-200 pt-1.5 dark:border-zinc-700'>
-				<div className='text-[11px] font-medium text-zinc-500 dark:text-zinc-400'>
+				<div className='text-[11px] font-medium text-zinc-500 dark:text-zinc-300'>
 					Site type
 				</div>
 				<div className='mt-1 flex flex-col gap-1 text-[11px] text-zinc-700 dark:text-zinc-200'>
-					<div className='flex items-center gap-1.5'>
-						<span className='h-2.5 w-2.5 rounded-full border border-zinc-500' />
-						Research Site
-					</div>
-					<div className='flex items-center gap-1.5'>
-						<svg
-							viewBox={PIN_VIEWBOX}
-							className='h-3.75 w-2.5 shrink-0'
-							fill='currentColor'
-							aria-hidden='true'
-						>
-							<path d={PIN_PATH} />
-						</svg>
-						User Generated
-					</div>
+					{SOURCE_ORDER.map(source => {
+						const visible = visibleSources[source];
+						const label = SOURCE_DISPLAY_LABELS[source];
+						return (
+							<button
+								key={source}
+								type='button'
+								onClick={() => onToggleSource(source)}
+								aria-pressed={visible}
+								aria-label={`${visible ? 'Hide' : 'Show'} ${label}`}
+								title={`${visible ? 'Hide' : 'Show'} ${label}`}
+								className='flex w-full items-center justify-between gap-2 rounded-md px-1 py-0.5 text-left hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 dark:hover:bg-zinc-800 dark:focus-visible:outline-zinc-500'
+							>
+								<span
+									className={`flex items-center gap-1.5 ${
+										visible ? '' : 'opacity-50'
+									}`}
+								>
+									{source === 'research' ? (
+										<span className='h-2.5 w-2.5 rounded-full border border-zinc-500' />
+									) : (
+										<svg
+											viewBox={PIN_VIEWBOX}
+											className='h-3.75 w-2.5 shrink-0'
+											fill='currentColor'
+											aria-hidden='true'
+										>
+											<path d={PIN_PATH} />
+										</svg>
+									)}
+									{label}
+								</span>
+								{visible ? <EyeIcon /> : <EyeOffIcon />}
+							</button>
+						);
+					})}
 				</div>
 			</div>
 			<div className='mt-1.5 flex items-center justify-between gap-2 border-t border-zinc-200 pt-1.5 dark:border-zinc-700'>

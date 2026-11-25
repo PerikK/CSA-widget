@@ -1,7 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { SourceStatus, SubmissionSource } from '@/lib/types';
+import type {
+	SourceStatus,
+	SourceVisibility,
+	SubmissionSource,
+} from '@/lib/types';
 
 // Leaflet needs `window`/DOM access, so the map is loaded client-side only.
 const Map = dynamic(() => import('./Map'), {
@@ -16,9 +20,17 @@ const Map = dynamic(() => import('./Map'), {
 export default function MapLoader({
 	refreshKey,
 	onStatus,
+	visibleSources,
 }: {
 	refreshKey: number;
 	onStatus: (sources: Record<SubmissionSource, SourceStatus>) => void;
+	visibleSources: SourceVisibility;
 }) {
-	return <Map refreshKey={refreshKey} onStatus={onStatus} />;
+	return (
+		<Map
+			refreshKey={refreshKey}
+			onStatus={onStatus}
+			visibleSources={visibleSources}
+		/>
+	);
 }

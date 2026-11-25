@@ -8,6 +8,7 @@ import { PIN_PATH, PIN_VIEWBOX } from '@/lib/markers';
 import type {
 	CitizenSubmission,
 	SourceStatus,
+	SourceVisibility,
 	SubmissionSource,
 	SubmissionsResponse,
 } from '@/lib/types';
@@ -169,14 +170,27 @@ function popupHtml(submission: CitizenSubmission): string {
 interface MapProps {
 	refreshKey: number;
 	onStatus: (sources: Record<SubmissionSource, SourceStatus>) => void;
+	visibleSources: SourceVisibility;
 }
 
-export default function Map({ refreshKey, onStatus }: MapProps) {
+export default function Map({
+	refreshKey,
+	onStatus,
+	visibleSources,
+}: MapProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const markersRef = useRef<L.LayerGroup | null>(null);
+	const [submissions, setSubmissions] = useState<CitizenSubmission[]>([]);
 	const [status, setStatus] = useState<Status>('loading');
 	const [error, setError] = useState<string | null>(null);
+
+	// Latest visibility, readable from the fit-bounds effect without making
+	// visibility changes refit the viewport.
+	const visibleSourcesRef = useRef(visibleSources);
+	useEffect(() => {
+		visibleSourcesRef.current = visibleSources;
+	}, [visibleSources]);
 
 	// Create the Leaflet map once (independent of data fetching/refresh).
 	useEffect(() => {
@@ -210,7 +224,7 @@ export default function Map({ refreshKey, onStatus }: MapProps) {
 		};
 	}, []);
 
-	// Fetch + render markers whenever refreshKey changes (including initial mount).
+	// Fetch submissions whenever refreshKey changes (including initial mount).
 	useEffect(() => {
 		let cancelled = false;
 
@@ -237,46 +251,7 @@ export default function Map({ refreshKey, onStatus }: MapProps) {
 						Number.isFinite(s.longitude),
 				);
 
-				const map = mapRef.current;
-				const markers = markersRef.current;
-
-				if (map && markers) {
-					markers.clearLayers();
-
-					for (const submission of points) {
-						const meta = assessmentMeta(submission.overallAssessment);
-						const latlng: [number, number] = [
-							submission.latitude,
-							submission.longitude,
-						];
-						const marker =
-							submission.source === 'research'
-								? L.circleMarker(latlng, {
-										radius: 8,
-										color: '#ffffff',
-										weight: 2,
-										fillColor: meta.color,
-										fillOpacity: 0.95,
-									})
-								: L.marker(latlng, {
-										icon: getPinIcon(meta.color),
-									});
-						marker.bindPopup(popupHtml(submission), {
-							maxWidth: 860,
-						});
-						marker.addTo(markers);
-					}
-
-					if (points.length > 0) {
-						const bounds = L.latLngBounds(
-							points.map(
-								s => [s.latitude, s.longitude] as [number, number],
-							),
-						);
-						map.fitBounds(bounds, { padding: [32, 32], maxZoom: 16 });
-					}
-				}
-
+				setSubmissions(points);
 				onStatus(payload.sources);
 				setStatus('ready');
 			} catch (err) {
@@ -291,6 +266,58 @@ export default function Map({ refreshKey, onStatus }: MapProps) {
 			cancelled = true;
 		};
 	}, [refreshKey, onStatus]);
+
+	// Re-render markers when the data or the visible sources change.
+	useEffect(() => {
+		const markers = markersRef.current;
+		if (!markers) return;
+
+		markers.clearLayers();
+
+		for (const submission of submissions) {
+			if (!visibleSources[submission.source]) continue;
+
+			const meta = assessmentMeta(submission.overallAssessment);
+			const latlng: [number, number] = [
+				submission.latitude,
+				submission.longitude,
+			];
+			const marker =
+				submission.source === 'research'
+					? L.circleMarker(latlng, {
+							radius: 8,
+							color: '#ffffff',
+							weight: 2,
+							fillColor: meta.color,
+							fillOpacity: 0.95,
+						})
+					: L.marker(latlng, {
+							icon: getPinIcon(meta.color),
+						});
+			marker.bindPopup(popupHtml(submission), {
+				maxWidth: 860,
+			});
+			marker.addTo(markers);
+		}
+	}, [submissions, visibleSources]);
+
+	// Fit the viewport when new data arrives, but not when visibility toggles.
+	useEffect(() => {
+		const map = mapRef.current;
+		if (!map) return;
+
+		const visible = submissions.filter(
+			s => visibleSourcesRef.current[s.source],
+		);
+		if (visible.length === 0) return;
+
+		const bounds = L.latLngBounds(
+			visible.map(
+				s => [s.latitude, s.longitude] as [number, number],
+			),
+		);
+		map.fitBounds(bounds, { padding: [32, 32], maxZoom: 16 });
+	}, [submissions]);
 
 	return (
 		<div className='relative h-full w-full'>
@@ -312,6 +339,16 @@ export default function Map({ refreshKey, onStatus }: MapProps) {
 					</div>
 				</div>
 			)}
+
+			{status === 'ready' &&
+				!visibleSources.research &&
+				!visibleSources['user-generated'] && (
+					<div className='pointer-events-none absolute inset-0 z-1001 flex items-center justify-center'>
+						<div className='rounded-md border border-zinc-200 bg-white/90 px-3 py-2 text-sm text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300'>
+							No site types selected — use the legend to show one.
+						</div>
+					</div>
+				)}
 		</div>
 	);
 }
