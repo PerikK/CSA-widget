@@ -1,6 +1,36 @@
 import { ASSESSMENT_META } from '@/lib/assessment';
+import { PIN_PATH, PIN_VIEWBOX } from '@/lib/markers';
+import type { SourceStatus, SubmissionSource } from '@/lib/types';
 
-function formatUpdatedAt(iso: string): string {
+const SOURCE_ORDER: SubmissionSource[] = ['research', 'user-generated'];
+
+const SOURCE_LABELS: Record<SubmissionSource, string> = {
+	research: 'Research sites',
+	'user-generated': 'User-generated sites',
+};
+
+const SOURCE_SHORT_LABELS: Record<SubmissionSource, string> = {
+	research: 'Research',
+	'user-generated': 'User-generated',
+};
+
+const MONTHS = [
+	'Jan',
+	'Feb',
+	'Mar',
+	'Apr',
+	'May',
+	'Jun',
+	'Jul',
+	'Aug',
+	'Sep',
+	'Oct',
+	'Nov',
+	'Dec',
+];
+
+function formatTime(iso: string | null): string {
+	if (!iso) return '—';
 	const d = new Date(iso);
 	if (Number.isNaN(d.getTime())) return iso;
 	return d.toLocaleTimeString(undefined, {
@@ -9,13 +39,42 @@ function formatUpdatedAt(iso: string): string {
 	});
 }
 
+function formatDateTime(iso: string): string {
+	const d = new Date(iso);
+	if (Number.isNaN(d.getTime())) return iso;
+	const dd = String(d.getDate()).padStart(2, '0');
+	const month = MONTHS[d.getMonth()];
+	const yyyy = d.getFullYear();
+	const hh = String(d.getHours()).padStart(2, '0');
+	const mm = String(d.getMinutes()).padStart(2, '0');
+	return `${dd}-${month}-${yyyy} ${hh}:${mm}`;
+}
+
+function sourceWarnings(
+	sources: Record<SubmissionSource, SourceStatus> | null,
+): string[] {
+	if (!sources) return [];
+
+	return SOURCE_ORDER.filter(source => !sources[source].ok).map(
+		source => {
+			const label = `${SOURCE_LABELS[source]} list`;
+			const { updatedAt } = sources[source];
+			return updatedAt
+				? `${label} could not be updated. Showing last known data from ${formatDateTime(updatedAt)}. Please refresh.`
+				: `${label} could not be retrieved. Please refresh.`;
+		},
+	);
+}
+
 export default function Legend({
-	updatedAt,
+	sources,
 	onRefresh,
 }: {
-	updatedAt: string | null;
+	sources: Record<SubmissionSource, SourceStatus> | null;
 	onRefresh: () => void;
 }) {
+	const warnings = sourceWarnings(sources);
+
 	return (
 		<div className='rounded-lg border border-zinc-200 bg-white/90 px-2 py-1.5 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/90'>
 			<div className='text-sm font-semibold pb-1.5'>
@@ -32,10 +91,40 @@ export default function Legend({
 					</div>
 				))}
 			</div>
+			<div className='mt-1.5 border-t border-zinc-200 pt-1.5 dark:border-zinc-700'>
+				<div className='text-[11px] font-medium text-zinc-500 dark:text-zinc-400'>
+					Site type
+				</div>
+				<div className='mt-1 flex flex-col gap-1 text-[11px] text-zinc-700 dark:text-zinc-200'>
+					<div className='flex items-center gap-1.5'>
+						<span className='h-2.5 w-2.5 rounded-full border border-zinc-500' />
+						Research Site
+					</div>
+					<div className='flex items-center gap-1.5'>
+						<svg
+							viewBox={PIN_VIEWBOX}
+							className='h-3.75 w-2.5 shrink-0'
+							fill='currentColor'
+							aria-hidden='true'
+						>
+							<path d={PIN_PATH} />
+						</svg>
+						User Generated
+					</div>
+				</div>
+			</div>
 			<div className='mt-1.5 flex items-center justify-between gap-2 border-t border-zinc-200 pt-1.5 dark:border-zinc-700'>
-				<span className='text-[11px] text-zinc-500 dark:text-zinc-400'>
-					Updated: {updatedAt ? formatUpdatedAt(updatedAt) : '—'}
-				</span>
+				<div className='text-[11px] text-zinc-500 dark:text-zinc-400'>
+					<div>Updated:</div>
+					{SOURCE_ORDER.map(source => (
+						<div key={source}>
+							{SOURCE_SHORT_LABELS[source]}:{' '}
+							{formatTime(
+								sources ? sources[source].updatedAt : null,
+							)}
+						</div>
+					))}
+				</div>
 				<button
 					type='button'
 					onClick={onRefresh}
@@ -57,6 +146,17 @@ export default function Legend({
 					Refresh
 				</button>
 			</div>
+			{warnings.length > 0 && (
+				<div
+					role='status'
+					aria-live='polite'
+					className='mt-1.5 max-w-68 border-t border-zinc-200 pt-1.5 text-[11px] leading-snug text-amber-600 dark:border-zinc-700 dark:text-amber-400'
+				>
+					{warnings.map(warning => (
+						<div key={warning}>{warning}</div>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

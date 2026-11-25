@@ -4,9 +4,13 @@ import { useCallback, useState } from 'react';
 import MapLoader from '@/components/MapLoader';
 import ThemeToggle from '@/components/ThemeToggle';
 import Legend from '@/components/Legend';
+import type { SourceStatus, SubmissionSource } from '@/lib/types';
 
 export default function EmbedPage() {
-	const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+	const [sources, setSources] = useState<Record<
+		SubmissionSource,
+		SourceStatus
+	> | null>(null);
 	const [refreshKey, setRefreshKey] = useState(0);
 
 	const handleRefresh = useCallback(() => {
@@ -15,12 +19,12 @@ export default function EmbedPage() {
 
 	return (
 		<main className='relative h-dvh w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950'>
-			<MapLoader refreshKey={refreshKey} onUpdatedAt={setUpdatedAt} />
+			<MapLoader refreshKey={refreshKey} onStatus={setSources} />
 
 			<div className='pointer-events-none absolute inset-0 z-1001 p-3'>
 				<div className='flex items-start justify-between'>
 					<div className='pointer-events-auto'>
-						<Legend updatedAt={updatedAt} onRefresh={handleRefresh} />
+						<Legend sources={sources} onRefresh={handleRefresh} />
 					</div>
 					<div className='pointer-events-auto'>
 						<ThemeToggle />

@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { assessmentMeta } from '@/lib/assessment';
+import { PIN_PATH, PIN_VIEWBOX } from '@/lib/markers';
 import type {
 	CitizenSubmission,
+	SourceStatus,
+	SubmissionSource,
 	SubmissionsResponse,
 } from '@/lib/types';
 
@@ -45,6 +48,23 @@ function list(value: string[] | null | undefined): string {
 	return value && value.length ? value.join(', ') : '—';
 }
 
+const pinIcons: Record<string, L.DivIcon> = {};
+
+function getPinIcon(color: string): L.DivIcon {
+	let icon = pinIcons[color];
+	if (!icon) {
+		icon = L.divIcon({
+			className: '',
+			html: `<svg width="24" height="36" viewBox="${PIN_VIEWBOX}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="${PIN_PATH}" fill="${color}" stroke="#ffffff" stroke-width="2" /><circle cx="12" cy="12" r="4" fill="#ffffff" /></svg>`,
+			iconSize: [24, 36],
+			iconAnchor: [12, 36],
+			popupAnchor: [0, -34],
+		});
+		pinIcons[color] = icon;
+	}
+	return icon;
+}
+
 function detailRow(label: string, value: string): string {
 	return `
     <div class="flex items-start gap-1.5 border-b border-zinc-100 py-1.5 dark:border-zinc-800">
@@ -55,9 +75,10 @@ function detailRow(label: string, value: string): string {
 
 function popupHtml(submission: CitizenSubmission): string {
 	const meta = assessmentMeta(submission.overallAssessment);
-	// `userGeneratedSite` is the field used by `/api/citizens/user-generated-sites/all-submissions`;
-	// the `/api/citizens/submissions` endpoint uses `researchSite` instead.
-	const site = text(submission.userGeneratedSite);
+	// Rows from `/api/citizens/submissions` carry `researchSite`; rows from
+	// `/api/citizens/user-generated-sites/all-submissions` carry
+	// `userGeneratedSite`. We merge both, so resolve whichever is present.
+	const site = text(submission.researchSite ?? submission.userGeneratedSite);
 
 	const rows = [
 		// ['Recorded by', text(submission.user)],
@@ -147,10 +168,10 @@ function popupHtml(submission: CitizenSubmission): string {
 
 interface MapProps {
 	refreshKey: number;
-	onUpdatedAt: (updatedAt: string) => void;
+	onStatus: (sources: Record<SubmissionSource, SourceStatus>) => void;
 }
 
-export default function Map({ refreshKey, onUpdatedAt }: MapProps) {
+export default function Map({ refreshKey, onStatus }: MapProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const markersRef = useRef<L.LayerGroup | null>(null);
@@ -224,16 +245,22 @@ export default function Map({ refreshKey, onUpdatedAt }: MapProps) {
 
 					for (const submission of points) {
 						const meta = assessmentMeta(submission.overallAssessment);
-						const marker = L.circleMarker(
-							[submission.latitude, submission.longitude],
-							{
-								radius: 8,
-								color: '#ffffff',
-								weight: 2,
-								fillColor: meta.color,
-								fillOpacity: 0.95,
-							},
-						);
+						const latlng: [number, number] = [
+							submission.latitude,
+							submission.longitude,
+						];
+						const marker =
+							submission.source === 'research'
+								? L.circleMarker(latlng, {
+										radius: 8,
+										color: '#ffffff',
+										weight: 2,
+										fillColor: meta.color,
+										fillOpacity: 0.95,
+									})
+								: L.marker(latlng, {
+										icon: getPinIcon(meta.color),
+									});
 						marker.bindPopup(popupHtml(submission), {
 							maxWidth: 860,
 						});
@@ -250,7 +277,7 @@ export default function Map({ refreshKey, onUpdatedAt }: MapProps) {
 					}
 				}
 
-				onUpdatedAt(payload.updatedAt);
+				onStatus(payload.sources);
 				setStatus('ready');
 			} catch (err) {
 				if (cancelled) return;
@@ -263,7 +290,7 @@ export default function Map({ refreshKey, onUpdatedAt }: MapProps) {
 		return () => {
 			cancelled = true;
 		};
-	}, [refreshKey, onUpdatedAt]);
+	}, [refreshKey, onStatus]);
 
 	return (
 		<div className='relative h-full w-full'>

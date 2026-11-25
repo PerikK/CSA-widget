@@ -2,12 +2,16 @@
 // Both endpoints below return the same shape, except for the site identifier field:
 //   - GET /api/citizens/submissions                        -> `researchSite`
 //   - GET /api/citizens/user-generated-sites/all-submissions -> `userGeneratedSite`
+// The two sets are merged server-side; `source` records which endpoint a row
+// came from (used for filtering and marker shape).
+export type SubmissionSource = 'research' | 'user-generated';
+
 export interface CitizenSubmission {
-	id: number;
+	source: SubmissionSource;
 	longitude: number;
 	latitude: number;
-	userGeneratedSite: string; // `/api/citizens/user-generated-sites/all-submissions`
-	// researchSite: string;   // `/api/citizens/submissions`
+	researchSite?: string | null; // `/api/citizens/submissions`
+	userGeneratedSite?: string | null; // `/api/citizens/user-generated-sites/all-submissions`
 	createdAt: string;
 	user: string;
 	upstreamPhoto?: string | null;
@@ -45,9 +49,14 @@ export interface CitizenSubmission {
 	fear?: number;
 }
 
-// Shape returned by `GET /api/submissions` (our own route): the submissions
-// plus the timestamp of when they were last fetched from the upstream API.
+export interface SourceStatus {
+	updatedAt: string | null; // null = never successfully fetched
+	ok: boolean; // false = the latest fetch attempt failed
+}
+
+// Shape returned by `GET /api/submissions` (our own route): the merged
+// submissions plus the per-source fetch status.
 export interface SubmissionsResponse {
 	submissions: CitizenSubmission[];
-	updatedAt: string;
+	sources: Record<SubmissionSource, SourceStatus>;
 }
