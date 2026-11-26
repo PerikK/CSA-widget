@@ -112,6 +112,25 @@ function EyeOffIcon() {
 	);
 }
 
+function ExternalLinkIcon() {
+	return (
+		<svg
+			viewBox='0 0 24 24'
+			className='h-3 w-3 shrink-0'
+			fill='none'
+			stroke='currentColor'
+			strokeWidth='2'
+			strokeLinecap='round'
+			strokeLinejoin='round'
+			aria-hidden='true'
+		>
+			<path d='M14 3h7v7' />
+			<path d='M10 14 21 3' />
+			<path d='M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5' />
+		</svg>
+	);
+}
+
 export default function Legend({
 	sources,
 	visibleSources,
@@ -190,9 +209,7 @@ export default function Legend({
 					{SOURCE_ORDER.map(source => (
 						<div key={source}>
 							{SOURCE_SHORT_LABELS[source]}:{' '}
-							{formatTime(
-								sources ? sources[source].updatedAt : null,
-							)}
+							{formatTime(sources ? sources[source].updatedAt : null)}
 						</div>
 					))}
 				</div>
@@ -228,6 +245,30 @@ export default function Legend({
 					))}
 				</div>
 			)}
+			<div className='mt-1.5 border-t border-zinc-200 pt-1.5 dark:border-zinc-700'>
+				<div className='flex flex-col gap-1 text-[11px]'>
+					<a
+						href='https://www.oneaquahealth.eu'
+						target='_blank'
+						rel='noopener noreferrer'
+						className='inline-flex w-fit items-center gap-1 font-medium text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 dark:text-zinc-300 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-500'
+					>
+						Go to OAH
+						<span className='sr-only'> (opens in a new tab)</span>
+						<ExternalLinkIcon />
+					</a>
+					<a
+						href='https://www.oneaquahealth.eu/project-solutions/'
+						target='_blank'
+						rel='noopener noreferrer'
+						className='inline-flex w-fit items-center gap-1 font-medium text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 dark:text-zinc-300 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-500'
+					>
+						Go to OAH - Solutions
+						<span className='sr-only'> (opens in a new tab)</span>
+						<ExternalLinkIcon />
+					</a>
+				</div>
+			</div>
 		</div>
 	);
 }
