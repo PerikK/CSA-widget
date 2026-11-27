@@ -25,7 +25,7 @@ function escapeHtml(value: string): string {
 }
 
 function formatDate(iso: string | null | undefined): string {
-	if (!iso) return '—';
+	if (!iso) return 'Not provided';
 	const d = new Date(iso);
 	if (Number.isNaN(d.getTime())) return iso;
 	return d.toLocaleDateString(undefined, {
@@ -38,15 +38,15 @@ function formatDate(iso: string | null | undefined): string {
 function yesNo(value: boolean | null | undefined): string {
 	if (value === true) return 'Yes';
 	if (value === false) return 'No';
-	return '—';
+	return 'Not provided';
 }
 
 function text(value: string | null | undefined): string {
-	return value && value.trim() ? value : '—';
+	return value && value.trim() ? value : 'Not provided';
 }
 
 function list(value: string[] | null | undefined): string {
-	return value && value.length ? value.join(', ') : '—';
+	return value && value.length ? value.join(', ') : 'Not provided';
 }
 
 const pinIcons: Record<string, L.DivIcon> = {};
@@ -97,7 +97,7 @@ function popupHtml(submission: CitizenSubmission): string {
 			'Number of dams',
 			submission.numberOfDams != null
 				? String(submission.numberOfDams)
-				: '—',
+				: 'Not provided',
 		],
 		['Pipes', yesNo(submission.pipes)],
 		['Water discharge', yesNo(submission.waterDischarge)],
@@ -106,7 +106,7 @@ function popupHtml(submission: CitizenSubmission): string {
 			'Water height',
 			submission.waterHeight != null
 				? `${submission.waterHeight} m`
-				: '—',
+				: 'Not provided',
 		],
 		[
 			'Impervious areas (left)',
@@ -135,16 +135,16 @@ function popupHtml(submission: CitizenSubmission): string {
 			'Recent vegetation cuts',
 			yesNo(submission.recentVegetationCuts),
 		],
-		['Joy', submission.joy != null ? String(submission.joy) : '—'],
+		['Joy', submission.joy != null ? String(submission.joy) : 'Not provided'],
 		[
 			'Serenity',
-			submission.serenity != null ? String(submission.serenity) : '—',
+			submission.serenity != null ? String(submission.serenity) : 'Not provided',
 		],
 		[
 			'Anger',
-			submission.anger != null ? String(submission.anger) : '—',
+			submission.anger != null ? String(submission.anger) : 'Not provided',
 		],
-		['Fear', submission.fear != null ? String(submission.fear) : '—'],
+		['Fear', submission.fear != null ? String(submission.fear) : 'Not provided'],
 	]
 		.map(([label, value]) => detailRow(label, value))
 		.join('');

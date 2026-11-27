@@ -253,7 +253,7 @@ export default function Legend({
 						rel='noopener noreferrer'
 						className='inline-flex w-fit items-center gap-1 font-medium text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 dark:text-zinc-300 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-500'
 					>
-						Go to OAH
+						Go to OneAquaHealth Hub
 						<span className='sr-only'> (opens in a new tab)</span>
 						<ExternalLinkIcon />
 					</a>
@@ -263,7 +263,7 @@ export default function Legend({
 						rel='noopener noreferrer'
 						className='inline-flex w-fit items-center gap-1 font-medium text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 dark:text-zinc-300 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-500'
 					>
-						Go to OAH - Solutions
+						Go to OneAquaHealth Solutions
 						<span className='sr-only'> (opens in a new tab)</span>
 						<ExternalLinkIcon />
 					</a>
