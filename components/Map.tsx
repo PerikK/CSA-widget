@@ -342,7 +342,7 @@ export default function Map({
 
 			{status === 'ready' &&
 				!visibleSources.research &&
-				!visibleSources['user-generated'] && (
+				!visibleSources.userGenerated && (
 					<div className='pointer-events-none absolute inset-0 z-1001 flex items-center justify-center'>
 						<div className='rounded-md border border-zinc-200 bg-white/90 px-3 py-2 text-sm text-zinc-600 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300'>
 							No site types selected — use the legend to show one.

@@ -31,7 +31,7 @@ const LOGIN_PATH = '/api/auth/login';
 
 const SUBMISSION_PATHS: Record<SubmissionSource, string> = {
 	research: '/api/citizens/submissions',
-	'user-generated': '/api/citizens/user-generated-sites/all-submissions',
+	userGenerated: '/api/citizens/user-generated-sites/all-submissions',
 };
 
 const SUBMISSION_SOURCES = Object.keys(
@@ -67,12 +67,12 @@ interface SourceCacheEntry {
 // last-known-good data of the other.
 const sourceCaches: Record<SubmissionSource, SourceCacheEntry | null> = {
 	research: null,
-	'user-generated': null,
+	userGenerated: null,
 };
 
 const refreshInFlight: Record<SubmissionSource, Promise<void> | null> = {
 	research: null,
-	'user-generated': null,
+	userGenerated: null,
 };
 
 function decodeJwtExp(token: string): number | null {

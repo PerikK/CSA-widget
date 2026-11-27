@@ -6,21 +6,21 @@ import type {
 	SubmissionSource,
 } from '@/lib/types';
 
-const SOURCE_ORDER: SubmissionSource[] = ['research', 'user-generated'];
+const SOURCE_ORDER: SubmissionSource[] = ['research', 'userGenerated'];
 
 const SOURCE_LABELS: Record<SubmissionSource, string> = {
 	research: 'Research sites',
-	'user-generated': 'User-generated sites',
+	userGenerated: 'User-generated sites',
 };
 
 const SOURCE_SHORT_LABELS: Record<SubmissionSource, string> = {
 	research: 'Research',
-	'user-generated': 'User-generated',
+	userGenerated: 'User-generated',
 };
 
 const SOURCE_DISPLAY_LABELS: Record<SubmissionSource, string> = {
 	research: 'Research Site',
-	'user-generated': 'User Generated',
+	userGenerated: 'User Generated',
 };
 
 const MONTHS = [

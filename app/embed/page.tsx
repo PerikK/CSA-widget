@@ -16,10 +16,10 @@ export default function EmbedPage() {
 		SourceStatus
 	> | null>(null);
 	// TODO: support host-controlled defaults via iframe query params
-	// (e.g. ?show=research / ?hide=user-generated).
+	// (e.g. ?show=research / ?hide=userGenerated).
 	const [visibleSources, setVisibleSources] = useState<SourceVisibility>({
 		research: true,
-		'user-generated': true,
+		userGenerated: true,
 	});
 	const [refreshKey, setRefreshKey] = useState(0);
 

@@ -4,7 +4,7 @@
 //   - GET /api/citizens/user-generated-sites/all-submissions -> `userGeneratedSite`
 // The two sets are merged server-side; `source` records which endpoint a row
 // came from (used for filtering and marker shape).
-export type SubmissionSource = 'research' | 'user-generated';
+export type SubmissionSource = 'research' | 'userGenerated';
 
 export type SourceVisibility = Record<SubmissionSource, boolean>;
 
